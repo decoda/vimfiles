@@ -323,8 +323,6 @@ nmap <F7> :cp<cr>
 nmap <F8> :cw<cr>
 nmap <F9> :ccl<cr>
 
-inoremap <c-i> <c-o>I
-inoremap <c-l> <c-o>A 
 inoremap <c-j> <Esc><Down>I
 inoremap <c-k> <Esc><Up>A
 
@@ -332,9 +330,6 @@ inoremap <c-k> <Esc><Up>A
 nmap sl :!start TortoiseProc /command:log /path:% <cr>
 nmap sc :!start TortoiseProc /command:commit /path:% <cr>
 nmap sd :!start TortoiseProc /command:diff /path:% <cr>
-
-"autocomplpop设置
-let g:acp_mappingDriven = 1 "进入插入模式不立即弹出
 
 " -----------------------------------------------------------------------------
 " CTRL-A is Select all
