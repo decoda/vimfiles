@@ -4,7 +4,7 @@
 " Contributors: Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
 "               Eduardo Lopez (http://github.com/tapichu)
 " License:      Vim license
-" Version:      2012/01/25
+" Version:      2012/08/14
 
 if exists('b:did_ftplugin')
 	finish
@@ -44,8 +44,8 @@ function s:SetErlangOptions()
 
 	setlocal comments=:%%%,:%%,:%
 	setlocal commentstring=%%s
-
 	setlocal formatoptions+=ro
+	setlocal suffixesadd=.erl
 	let &l:keywordprg = g:erlang_keywordprg
 endfunction
 

@@ -10,6 +10,10 @@
 " Completion program path
 let s:erlang_complete_file = expand('<sfile>:p:h') . '/erlang_complete.erl'
 
+let s:erlang_complete_cache_file = expand('<sfile>:p:h') . '/erlang_index'
+let s:erlang_cache_load = 0
+let s:modules_name_key = 'module'
+
 if !exists('g:erlang_completion_cache')
 	let g:erlang_completion_cache = 1
 endif
@@ -24,6 +28,11 @@ let s:erlang_blank_line        = '^\s*\(%.*\)\?$'
 
 " Main function for completion
 function erlang_complete#Complete(findstart, base)
+	if s:erlang_cache_load == 0
+		call s:ErlangLoadCache(a:base)
+		let s:erlang_cache_load = 1
+	endif
+
 	let lnum = line('.')
 	let column = col('.')
 	let line = strpart(getline('.'), 0, column - 1)
@@ -101,7 +110,8 @@ function s:ErlangFindExternalFunc(module, base)
 		return []
 	endif
 
-	let functions = system('escript.exe ' s:erlang_complete_file . ' ' . a:module)
+	let functions = system("escript.exe " . s:erlang_complete_file . ' ' . a:module)
+	" let functions = system(s:erlang_complete_file . ' ' . a:module)
 	for function_spec in split(functions, '\n')
 		if match(function_spec, a:base) == 0
 			let function_name = matchstr(function_spec, a:base . '\w*')
@@ -131,7 +141,7 @@ function s:ErlangFindExternalFunc(module, base)
 		endif
 	endfor
 
-	return []
+    call s:WriteCache(a:module)
 endfunction
 
 " Find local function names
@@ -154,5 +164,92 @@ function s:ErlangFindLocalFunc(base)
 		let lnum = s:ErlangFindNextNonBlank(lnum)
 	endwhile
 
+	" Always check BIF and Module
+	call s:ErlangFindModule(a:base)
+	call s:ErlangFindBIF(a:base)
+
 	return []
 endfunction
+
+function s:ErlangLoadCache(base)
+	let s:modules_cache[s:modules_name_key] = []
+
+	if filereadable(s:erlang_complete_cache_file)
+		for line in readfile(s:erlang_complete_cache_file)
+			let cache = eval(line)
+			for key in keys(cache)
+				" add cached module name in the case
+				" use 'm' just to distinguish from function
+				let module_field = {'word': key . '(', 'abbr': key .
+						\' -> MODULE', 'kind': 'm', 'dup': 1}
+				let module_fields_cache = get(s:modules_cache, s:modules_name_key)
+				let s:modules_cache[s:modules_name_key] = add(module_fields_cache, module_field)
+
+				" add module function list to the cache
+				let function_list = get(cache, key)
+				let s:modules_cache[key] = function_list
+			endfor
+		endfor
+	endif
+
+	return []
+endfunction
+
+" Match BIFs
+function s:ErlangFindBIF(base)
+	if has_key(s:modules_cache, 'erlang')
+		for field_cache in get(s:modules_cache, 'erlang')
+			if match(field_cache.word, a:base) == 0
+				call complete_add(field_cache)
+			endif
+		endfor
+
+		return []
+	endif
+endfunction
+
+" Match module name
+function s:ErlangFindModule(base)
+	if has_key(s:modules_cache, s:modules_name_key)
+		for field_cache in get(s:modules_cache, s:modules_name_key)
+			if match(field_cache.word, a:base) == 0
+				call complete_add(field_cache)
+			endif
+		endfor
+
+		return []
+	endif
+endfunctio
+
+function s:WriteCache(module)
+    let function_list = s:modules_cache[a:module]
+    if len(function_list) > 0
+		let tmp_cache = {a:module : function_list}
+		" write cache to file
+		exe "redir >> " . s:erlang_complete_cache_file
+		silent echon tmp_cache
+		silent echon "\n"
+		redir END
+	endif
+endfunction
+
+function s:ErlangUpdateCache(...)
+    echo a:000
+    
+    for mod_name in a:000 
+        if has_key(s:modules_cache, mod_name)
+            call remove(s:modules_cache, mod_name)
+        endif
+    endfor
+
+    " delete the old cache file
+    call delete(s:erlang_complete_cache_file)
+
+    " write a new one
+    for key in keys(s:modules_cache)
+        call s:WriteCache(key)
+    endfor
+
+endfunction
+
+command -nargs=+ ErlangUpdate silent call s:ErlangUpdateCache(<f-args>)
