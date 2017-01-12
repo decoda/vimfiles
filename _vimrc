@@ -334,8 +334,8 @@ nmap sc :!start TortoiseProc /command:commit /path:% <cr>
 nmap sd :!start TortoiseProc /command:diff /path:% <cr>
 
 let g:NERDCommentEmptyLines = 1
-let g:NERDDefaultAlign = 'start'
-
+let g:NERDDefaultAlign = 'left'
+let g:NERDCustomDelimiters = {'erlang':{'left':'%%'}}
 
 " -----------------------------------------------------------------------------
 " CTRL-A is Select all
