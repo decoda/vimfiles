@@ -2,17 +2,20 @@
 
 main([File]) ->
     Dir = filename:dirname(File),
-    Defs = [strong_validation,
-            warn_export_all,
-            warn_export_vars,
+    Defs = [
+            %strong_validation,
+            %warn_export_all,
+            %warn_export_vars,
             warn_shadow_vars,
             warn_obsolete_guard,
             warn_unused_import,
             report,
+            export_all,
             {i, Dir ++ "/include"},
             {i, Dir ++ "/../include"},
             {i, Dir ++ "/../../include"},
-            {i, Dir ++ "/../../../include"}],
+            {i, Dir ++ "/../../../include"},
+            {outdir, "ebin"}],
     case file:consult("rebar.config") of
         {ok, Terms} ->
             RebarLibDirs = proplists:get_value(lib_dirs, Terms, []),
