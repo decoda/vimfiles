@@ -387,7 +387,7 @@ inoremap <C-S>		<C-O>:update<CR>
 vnoremap <C-X> "+x
 vnoremap <C-C> "+y
 map! <C-V> <Esc>"+pa
-map <C-j> ciw<C-r>0<ESC>
+noremap <C-j> ciw<C-r>0<ESC>
 " -----------------------------------------------------------------------------
 " 括号补全
 function! AutoPair(open, close)
