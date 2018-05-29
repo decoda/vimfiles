@@ -333,7 +333,7 @@ nmap <F8> :cw<cr>
 nmap <F9> :ccl<cr>
 
 " 转到文件夹
-function OpenFileLocation()
+function! OpenFileLocation()
     if (expand("%")!="")
         execute "!start explorer /select, %"
     else
